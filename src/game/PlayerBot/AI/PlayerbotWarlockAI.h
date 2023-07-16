@@ -172,7 +172,7 @@ class PlayerbotWarlockAI : PlayerbotClassAI
         CombatManeuverReturns CastSpell(uint32 nextAction, Unit* pTarget = nullptr) { return CastSpellWand(nextAction, pTarget, SHOOT); }
 
         bool CheckCurse(Unit* target);
-        void CheckDemon();
+        void CheckDemon(Unit* target);
 
         // CURSES
         uint32 CURSE_OF_WEAKNESS,

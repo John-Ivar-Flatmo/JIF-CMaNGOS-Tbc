@@ -87,6 +87,7 @@ enum DruidSpells
     TRAVEL_FORM_1                   = 783,
     TREE_OF_LIFE_1                  = 33891,
     WRATH_1                         = 5176,
+    CLEARCASTING_OMEN_1             = 16870,
 };
 
 //class Player;
@@ -196,7 +197,9 @@ class PlayerbotDruidAI : PlayerbotClassAI
                THORNS,
                INNERVATE,
                NATURES_SWIFTNESS,
-               BARKSKIN;
+               BARKSKIN,
+               CLEARCASTING_OMEN,
+               FRENZIED_REGENERATION;
 
         // druid heals
         uint32 LIFEBLOOM,

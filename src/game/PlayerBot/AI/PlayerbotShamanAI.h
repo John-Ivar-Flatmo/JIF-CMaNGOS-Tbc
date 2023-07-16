@@ -82,6 +82,10 @@ enum
     WINDFURY_WEAPON_1               = 8232,
     WRATH_OF_AIR_TOTEM_1            = 3738,
 
+    GRACE_OF_AIR_TOTEM_1            = 25359,
+    WINDWALL_TOTEM_1		    = 15107,
+    TRANQUIL_AIR_TOTEM_1	    = 25908,
+
     //Totem Buffs
     STRENGTH_OF_EARTH_EFFECT_1      = 8076,
     FLAMETONGUE_EFFECT_1            = 8026,
@@ -134,7 +138,7 @@ class PlayerbotShamanAI : PlayerbotClassAI
         // Dispel disease or negative magic effects from an internally selected target
         CombatManeuverReturns DispelPlayer(Player* target = nullptr);
 
-        void DropTotems();
+        void DropTotems(Unit* pTarget);
         void CheckShields();
         void UseCooldowns();
 
@@ -189,6 +193,11 @@ class PlayerbotShamanAI : PlayerbotClassAI
                FIRE_ELEMENTAL_TOTEM,
                EARTHBIND_TOTEM,
                ELEMENTAL_MASTERY;
+
+        // JIFEDIT missing one
+       uint32 GRACE_OF_AIR_TOTEM,
+              WINDWALL_TOTEM,
+              TRANQUIL_AIR_TOTEM;
 
         // racial
         uint32 ARCANE_TORRENT,

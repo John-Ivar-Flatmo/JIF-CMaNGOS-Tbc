@@ -3147,6 +3147,12 @@ void PlayerbotAI::GetCombatTarget(Unit* forcedTarget)
     // we already have a target and we are not forced to change it
     if (m_targetCombat)
     {
+    	if(AIT_HIGHESTTHREAT){ //JIFEDIT change target if highest threat, regardless of forced attack incase we are tank or healer
+	    m_targetCombat = nullptr;
+            m_targetType = TARGET_NORMAL;
+            m_targetChanged = true;
+            return;
+	}else{ //if not highest threat check if target is nutralized and handle apropriatly
         // We have a target but it is neutralised and we are not forced to attack it: clear it for now
         if ((IsNeutralized(m_targetCombat) && !m_ignoreNeutralizeEffect))
         {
@@ -3161,6 +3167,7 @@ void PlayerbotAI::GetCombatTarget(Unit* forcedTarget)
                 m_ignoreNeutralizeEffect = false;                           // target is no longer neutralised, clear ignore order
             return;                                                         // keep on attacking target
         }
+        };
     }
 
     // No target for now, try to get one

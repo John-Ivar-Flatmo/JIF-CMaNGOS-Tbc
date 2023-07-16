@@ -183,6 +183,8 @@ CombatManeuverReturns PlayerbotWarlockAI::DoNextCombatManeuverPVE(Unit* pTarget)
     uint32 spec = m_bot.GetSpec();
     uint8 shardCount = m_bot.GetItemCount(SOUL_SHARD, false, nullptr);
 
+CheckDemon(pTarget);
+
     //If we have UA it will replace immolate in our rotation
     uint32 FIRE = (UNSTABLE_AFFLICTION > 0 ? UNSTABLE_AFFLICTION : IMMOLATE);
 
@@ -333,13 +335,30 @@ CombatManeuverReturns PlayerbotWarlockAI::DoNextCombatManeuverPVE(Unit* pTarget)
                     return RETURN_CONTINUE;
                 break;
         }
-
-        // Shadow bolt is common to all specs
+//non spec dependant actions
+	if(m_ai.GetAttackerCount() >= 3){
+		if (HELLFIRE > 0 && meleeReach && !m_ai.IsImmuneToSchool(pTarget, SPELL_SCHOOL_MASK_FIRE) && m_ai.In_Reach(pTarget,RAIN_OF_FIRE) && CastSpell(HELLFIRE, pTarget))
+	 	 {
+			m_ai.SetIgnoreUpdateTime(15);
+			return RETURN_CONTINUE;
+		}	//rain of fire it up if in melee range and 3 targets	//JIFEDIT
+		if (RAIN_OF_FIRE > 0 && !m_ai.IsImmuneToSchool(pTarget, SPELL_SCHOOL_MASK_FIRE) && m_ai.In_Reach(pTarget,RAIN_OF_FIRE) && CastSpell(RAIN_OF_FIRE, pTarget))
+	 	 {
+			m_ai.SetIgnoreUpdateTime(8);
+			return RETURN_CONTINUE;
+		}	//rain of fire it up if 3 targets or more and not in melle range	//JIFEDIT
+    	};
         if (SHADOW_BOLT && !PlayerbotAI::IsImmuneToSchool(pTarget, SPELL_SCHOOL_MASK_SHADOW) && m_ai.In_Reach(pTarget, SHADOW_BOLT) && CastSpell(SHADOW_BOLT, pTarget))
             return RETURN_CONTINUE;
 
         // Default: shoot with wand
-        return CastSpell(SHOOT, pTarget);
+	if (CastSpell(SHOOT, pTarget) == SPELL_CAST_OK){
+	return CastSpell(SHOOT, pTarget);	//for some reason cant just return SPELL_CAST_OK  so secound wand i guess
+	}else{
+	m_bot.GetMotionMaster()->MoveFollow(GetHealTarget(), 9.0f, m_bot.GetOrientation()); //if cant cast shoot then move
+	CastSpell(SHOOT, pTarget);	//try shooting agein
+	return RETURN_CONTINUE;	//return but keep trying normal spells now that we have moved
+	};
     }
 
     // No spec due to low level OR no spell found yet
@@ -479,16 +498,18 @@ bool PlayerbotWarlockAI::CheckCurse(Unit* target)
     return false;
 }
 
-void PlayerbotWarlockAI::CheckDemon()
+void PlayerbotWarlockAI::CheckDemon(Unit* target)
 {
     uint32 spec = m_bot.GetSpec();
     uint8 shardCount = m_bot.GetItemCount(SOUL_SHARD, false, nullptr);
     Pet* pet = m_bot.GetPet();
     uint32 demonOfChoice;
+Unit* newTarget = m_ai.FindAttacker((PlayerbotAI::ATTACKERINFOTYPE)(PlayerbotAI::AIT_VICTIMSELF | PlayerbotAI::AIT_HIGHESTTHREAT), &m_bot);
+auto* creature = (Creature*) newTarget;
 
     // If pet other than imp is active: return
-    if (pet && pet->GetEntry() != DEMON_IMP)
-        return;
+    //if (pet && pet->GetEntry() != DEMON_IMP)
+    //    return;	//imps are real peaple too //or rather deamons arent real peaple
 
     // Assign demon of choice based on spec
     if (spec == WARLOCK_SPEC_AFFLICTION)
@@ -498,6 +519,21 @@ void PlayerbotWarlockAI::CheckDemon()
     else    // Destruction spec or no spec found
         demonOfChoice = DEMON_IMP;
 
+//assign deamon of choice based on situation	//JIFEDIT
+if( creature && target ){
+	demonOfChoice = DEMON_IMP;	//deafult to imp
+	if ( creature->GetCreatureInfo()->CreatureType == CREATURE_TYPE_HUMANOID ){
+		demonOfChoice = DEMON_SUCCUBUS;	//humanoid then sucubus
+	};
+	if( ((Creature*)target)->GetCreatureInfo()->UnitClass == 8 ){
+	demonOfChoice = DEMON_FELHUNTER;	//if mage then felhunter
+	};
+	if ( m_ai.GetHealthPercent() < 50){
+	demonOfChoice = DEMON_VOIDWALKER;	//if low health then voidwalker
+	};			///////////////----------------------------/////////////
+};
+    if (pet && pet->GetEntry() != demonOfChoice)
+        return; //if we already have the pet we want just return
     // Summon demon
     if (!pet || m_isTempImp)
     {
@@ -695,7 +731,7 @@ void PlayerbotWarlockAI::DoNonCombatActions()
     if (pet && pet->GetEntry() == DEMON_VOIDWALKER && CONSUME_SHADOWS && pet->GetHealthPercent() < 75 && !pet->HasAura(CONSUME_SHADOWS))
         m_ai.CastPetSpell(CONSUME_SHADOWS);
 
-    CheckDemon();
+    //CheckDemon();
 
     // Soul link demon
     if (pet && SOUL_LINK && !m_bot.HasAura(SOUL_LINK_AURA) && m_ai.CastSpell(SOUL_LINK, m_bot) == SPELL_CAST_OK)

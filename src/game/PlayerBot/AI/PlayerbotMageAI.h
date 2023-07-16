@@ -82,7 +82,7 @@ enum MageSpells
     PYROBLAST_1                     = 11366,
     REMOVE_CURSE_MAGE_1             = 475,
     SCORCH_1                        = 2948,
-    SHOOT_2                                          = 5019,
+    SHOOT_2                         = 5019,
     SLOW_1                          = 31589,
     SLOW_FALL_1                     = 130,
     SPELLSTEAL_1                    = 30449,
@@ -93,7 +93,8 @@ enum MageTalents
 {
     IMPROVED_SCORCH_1               = 11095,
     IMPROVED_SCORCH_2               = 12872,
-    IMPROVED_SCORCH_3               = 12873
+    IMPROVED_SCORCH_3               = 12873,
+    WINTERS_CHILL_1                 = 28592
 };
 
 static const uint32 uiImprovedScorch[3] =
@@ -182,7 +183,8 @@ class PlayerbotMageAI : PlayerbotClassAI
                MANA_SHIELD,
                DAMPEN_MAGIC,
                AMPLIFY_MAGIC,
-               MAGE_REMOVE_CURSE;
+               MAGE_REMOVE_CURSE,
+               WINTERS_CHILL;
 
         // racial
         uint32 ARCANE_TORRENT,

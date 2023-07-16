@@ -357,6 +357,10 @@ CombatManeuverReturns PlayerbotWarriorAI::DoNextCombatManeuverPVE(Unit* pTarget)
             return RETURN_CONTINUE;
         if (EXECUTE > 0 && pTarget->GetHealthPercent() < 20 && m_ai.CastSpell(EXECUTE, *pTarget) == SPELL_CAST_OK)
             return RETURN_CONTINUE;
+        if (OVERPOWER > 0 && m_bot.IsSpellReady(OVERPOWER)){
+		if (m_bot.IsSpellReady(OVERPOWER) && m_ai.CastSpell(OVERPOWER, *pTarget) == SPELL_CAST_OK)
+		return RETURN_CONTINUE;
+        }; //overpower is strong and cheap use it
         if (BLOODTHIRST > 0 && m_bot.IsSpellReady(BLOODTHIRST) && m_ai.CastSpell(BLOODTHIRST, *pTarget) == SPELL_CAST_OK)
             return RETURN_CONTINUE;
         if (WHIRLWIND > 0 && m_bot.IsSpellReady(WHIRLWIND) && m_ai.CastSpell(WHIRLWIND, *pTarget) == SPELL_CAST_OK)
@@ -392,19 +396,19 @@ CombatManeuverReturns PlayerbotWarriorAI::DoNextCombatManeuverPVE(Unit* pTarget)
         if (EXECUTE > 0 && pTarget->GetHealthPercent() < 20 && m_ai.CastSpell(EXECUTE, *pTarget) == SPELL_CAST_OK)
             return RETURN_CONTINUE;
         if (REND > 0 && !pTarget->HasAura(REND, EFFECT_INDEX_0) && m_ai.CastSpell(REND, *pTarget) == SPELL_CAST_OK)
-            return RETURN_CONTINUE;
+            return RETURN_CONTINUE;	//druid mangle exists so rend no longer weaksauce
         if (MORTAL_STRIKE > 0 && m_bot.IsSpellReady(MORTAL_STRIKE) && m_ai.CastSpell(MORTAL_STRIKE, *pTarget) == SPELL_CAST_OK)
             return RETURN_CONTINUE;
         if (OVERPOWER > 0 && m_bot.IsSpellReady(OVERPOWER))
         {
-            uint8 base = pTarget->RollMeleeOutcomeAgainst(&m_bot, BASE_ATTACK, SPELL_SCHOOL_MASK_NORMAL);
-            uint8 off = pTarget->RollMeleeOutcomeAgainst(&m_bot, OFF_ATTACK, SPELL_SCHOOL_MASK_NORMAL);
-            if (base == MELEE_HIT_DODGE || off == MELEE_HIT_DODGE)
-            {
+            //uint8 base = pTarget->RollMeleeOutcomeAgainst(&m_bot, BASE_ATTACK, SPELL_SCHOOL_MASK_NORMAL);
+            //uint8 off = pTarget->RollMeleeOutcomeAgainst(&m_bot, OFF_ATTACK, SPELL_SCHOOL_MASK_NORMAL);
+            //if (base == MELEE_HIT_DODGE || off == MELEE_HIT_DODGE)
+            //{
                 if (m_bot.IsSpellReady(OVERPOWER) && m_ai.CastSpell(OVERPOWER, *pTarget) == SPELL_CAST_OK)
                     return RETURN_CONTINUE;
-            }
-        }
+            //}	//JIFEDIT //overpower is strong and cheap use it regardless
+        };
         if (THUNDER_CLAP > 0 && !pTarget->HasAura(THUNDER_CLAP) && m_ai.CastSpell(THUNDER_CLAP, *pTarget) == SPELL_CAST_OK)
             return RETURN_CONTINUE;
         if (HEROIC_STRIKE > 0 && m_ai.CastSpell(HEROIC_STRIKE, *pTarget) == SPELL_CAST_OK)

@@ -305,11 +305,35 @@ CombatManeuverReturns PlayerbotPaladinAI::HealPlayer(Player* target)
     // Other classes have to adjust their position to the healers
     // TODO: This code should be common to all healers and will probably
     // move to a more suitable place like PlayerbotAI::DoCombatMovement()
-    if ((GetTargetJob(target) == JOB_TANK || GetTargetJob(target) == JOB_MAIN_TANK)
+	uint32 testSpellReach = FLASH_OF_LIGHT;
+    if ((GetTargetJob(target) == JOB_TANK || GetTargetJob(target) == JOB_MAIN_TANK || target->GetHealthPercent() < 50)
             && m_bot.GetPlayerbotAI()->GetMovementOrder() != PlayerbotAI::MOVEMENT_STAY
-            && !m_ai.In_Reach(target, FLASH_OF_LIGHT))
+            && !m_ai.In_Reach(target, testSpellReach))
     {
         m_bot.GetMotionMaster()->MoveFollow(target, 39.0f, m_bot.GetOrientation());
+        return RETURN_CONTINUE;
+    }
+
+    if ((target->GetHealthPercent() < 25)
+	&& m_bot.GetPlayerbotAI()->GetMovementOrder() != PlayerbotAI::MOVEMENT_STAY
+	&& !m_ai.In_Reach(target, testSpellReach))
+    {
+        m_bot.GetMotionMaster()->MoveFollow(target, 19.0f, m_bot.GetOrientation());
+        return RETURN_CONTINUE;
+    }
+
+    if ((target->GetHealthPercent() < 15)
+	&& m_bot.GetPlayerbotAI()->GetMovementOrder() != PlayerbotAI::MOVEMENT_STAY
+	&& !m_ai.In_Reach(target, testSpellReach))
+    {
+        m_bot.GetMotionMaster()->MoveFollow(target, 9.0f, m_bot.GetOrientation());
+        return RETURN_CONTINUE;
+    }
+
+    if ((target->GetHealthPercent() < 7)
+	&& m_bot.GetPlayerbotAI()->GetMovementOrder() != PlayerbotAI::MOVEMENT_STAY)
+    {
+        m_bot.GetMotionMaster()->MoveFollow(target, 1.0f, m_bot.GetOrientation());
         return RETURN_CONTINUE;
     }
 
