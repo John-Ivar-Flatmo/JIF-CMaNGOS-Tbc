@@ -168,7 +168,7 @@ void AuctionHouseMgr::SendAuctionSalePendingMail(AuctionEntry* auction)
 {
     ObjectGuid owner_guid = ObjectGuid(HIGHGUID_PLAYER, auction->owner);
     Player* owner = sObjectMgr.GetPlayer(owner_guid);
-
+	time_t auction_time = 1;	//JIFEDIT-mail-noPending
     // owner exist (online or offline)
     if (owner || (owner_guid && sObjectMgr.GetPlayerAccountIdByGUID(owner_guid)))
     {
@@ -178,7 +178,7 @@ void AuctionHouseMgr::SendAuctionSalePendingMail(AuctionEntry* auction)
         std::ostringstream msgAuctionSalePendingBody;
         uint32 auctionCut = auction->GetAuctionCut();
 
-        time_t distrTime = time(nullptr) + HOUR;
+        time_t distrTime = time(nullptr) + auction_time;
 
         msgAuctionSalePendingBody.width(16);
         msgAuctionSalePendingBody << std::right << std::hex << auction->bidder;
@@ -188,8 +188,8 @@ void AuctionHouseMgr::SendAuctionSalePendingMail(AuctionEntry* auction)
 
         DEBUG_LOG("AuctionSalePending body string : %s", msgAuctionSalePendingBody.str().c_str());
 
-        MailDraft(msgAuctionSalePendingSubject.str(), msgAuctionSalePendingBody.str())
-        .SendMailTo(MailReceiver(owner, owner_guid), auction, MAIL_CHECK_MASK_COPIED);
+       // MailDraft(msgAuctionSalePendingSubject.str(), msgAuctionSalePendingBody.str())	//JIFEDIT-mail-noPending
+       //.SendMailTo(MailReceiver(owner, owner_guid), auction, MAIL_CHECK_MASK_COPIED);	//JIFEDIT-mail-noPending
     }
 }
 
@@ -198,7 +198,7 @@ void AuctionHouseMgr::SendAuctionSuccessfulMail(AuctionEntry* auction)
 {
     ObjectGuid owner_guid = ObjectGuid(HIGHGUID_PLAYER, auction->owner);
     Player* owner = sObjectMgr.GetPlayer(owner_guid);
-
+	time_t auction_time = 1;	//JIFEDIT-mail-noPending
     uint32 owner_accId = 0;
     if (!owner)
         owner_accId = sObjectMgr.GetPlayerAccountIdByGUID(owner_guid);
@@ -229,7 +229,7 @@ void AuctionHouseMgr::SendAuctionSuccessfulMail(AuctionEntry* auction)
 
         MailDraft(msgAuctionSuccessfulSubject.str(), auctionSuccessfulBody.str())
         .SetMoney(profit)
-        .SendMailTo(MailReceiver(owner, owner_guid), auction, MAIL_CHECK_MASK_COPIED, HOUR);
+        .SendMailTo(MailReceiver(owner, owner_guid), auction, MAIL_CHECK_MASK_COPIED, auction_time);	//JIFEDIT-mail-noPending
     }
 }
 
