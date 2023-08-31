@@ -254,13 +254,14 @@ bool PlayerbotClassAI::FindTargetAndHeal()
  * Will need extensive re-write for co-operation amongst multiple healers. As it stands, multiple healers would all pick the same 'ideal'
  * healing target.
  */
-Player* PlayerbotClassAI::GetHealTarget(JOB_TYPE type, bool onlyPickFromSameGroup)
+Player* PlayerbotClassAI::GetHealTarget(JOB_TYPE type, bool onlyPickFromSameGroup) //JIFEDIT rewuite gethealtarget
 {
     if (!m_bot.IsAlive() || m_bot.IsInDuel()) return nullptr;
 
     // define seperately for sorting purposes - DO NOT CHANGE ORDER!
     std::vector<heal_priority> targets;
     uint8 uiHealthPercentage;
+	uint8 uiManaPercentage;
 
     // First, fill the list of targets
     if (m_bot.GetGroup())
@@ -280,112 +281,120 @@ Player* PlayerbotClassAI::GetHealTarget(JOB_TYPE type, bool onlyPickFromSameGrou
             }
         }
     }
-    else
-    {
+    else //if not in group
+    {		//self
         targets.push_back(heal_priority(&m_bot, m_bot.GetHealthPercent(), GetTargetJob(&m_bot)));
         if (!m_master.IsInDuel())
-        {
+        {	//master
             uiHealthPercentage = int(m_master.GetMaxHealth() != 0 ? m_master.GetHealth() * 100 / m_master.GetMaxHealth() : 0);
             targets.push_back(heal_priority(&m_master, uiHealthPercentage, GetTargetJob(&m_master)));
         }
     }
 
+
+
+
     // Sorts according to type: Main tank first, healers second, then regular tanks, then master followed by DPS, thanks to the order of the TYPE enum
-    std::sort(targets.begin(), targets.end());
+    //std::sort(targets.begin(), targets.end());	//no need to sort we pick from the list anyway
 
     uint8 uCount = 0, i = 0;
-    // x is used as 'target found' variable; i is used as the targets iterator throughout all 6 types.
-    int16 x = -1;
-
-    // Try to find a main tank in need of healing (if multiple, the lowest health one)
-    while (true)
+    // x is used as 'target found' variable; i is used as the targets iterator
+    int16 x = -1;	//priority here is lowest
+	//find litteraly anyone to define x
+	for (i = 0, uCount = targets.size(); uCount > 0; uCount--, i++)
     {
-        // This works because we sorted it above
-        if (uint32(uCount + i) >= uint32(targets.size()) || !(targets.at(uCount).type & JOB_MAIN_TANK)) break;
-        uCount++;
+		x = i;
+		break;
     }
+	int16 armorHighest = 0;	//raw value
+	int16 healthLowest = 100; //percent
 
-    // We have uCount main tanks in the targets, check if any qualify for priority healing
-    for (; uCount > 0; uCount--, i++)
-    {
-        if (targets.at(i).hp <= m_MinHealthPercentTank)
-            if (x == -1 || targets.at(x).hp > targets.at(i).hp)
-                x = i;
-    }
-    if (x > -1) return targets.at(x).p;
 
-    // Try to find a healer in need of healing (if multiple, the lowest health one)
-    while (true)
-    {
-        if (uint32(uCount + i) >= uint32(targets.size()) || !(targets.at(uCount).type & (JOB_HEAL | JOB_MAIN_HEAL))) break;
-        uCount++;
-    }
-
-    for (; uCount > 0; uCount--, i++)
-    {
-        if (targets.at(i).hp <= m_MinHealthPercentHealer)
-            if (x == -1 || targets.at(x).hp > targets.at(i).hp)
-                x = i;
-    }
-    if (x > -1) return targets.at(x).p;
-
-    // Try to find a tank in need of healing (if multiple, the lowest health one)
-    while (true)
-    {
-        if (uint32(uCount + i) >= uint32(targets.size()) || !(targets.at(uCount).type & JOB_TANK)) break;
-        uCount++;
-    }
-
-    for (; uCount > 0; uCount--, i++)
-    {
-        if (targets.at(i).hp <= m_MinHealthPercentTank)
-            if (x == -1 || targets.at(x).hp > targets.at(i).hp)
-                x = i;
-    }
-    if (x > -1) return targets.at(x).p;
-
-    // Try to find master in need of healing (lowest health one first)
-    if (m_MinHealthPercentMaster != m_MinHealthPercentDPS)
-    {
-        while (true)
-        {
-            if (uint32(uCount + i) >= uint32(targets.size()) || !(targets.at(uCount).type & JOB_MASTER)) break;
-            uCount++;
-        }
-
-        for (; uCount > 0; uCount--, i++)
-        {
-            if (targets.at(i).hp <= m_MinHealthPercentMaster)
-                if (x == -1 || targets.at(x).hp > targets.at(i).hp)
-                    x = i;
-        }
-        if (x > -1) return targets.at(x).p;
-    }
-
-    // Try to find anyone else in need of healing (lowest health one first)
-    while (true)
-    {
-        if (uint32(uCount + i) >= uint32(targets.size())) break;
-        uCount++;
-    }
-
-    for (; uCount > 0; uCount--, i++)
-    {
-        if (targets.at(i).hp <= m_MinHealthPercentDPS)
-            if (x == -1 || targets.at(x).hp > targets.at(i).hp)
-                x = i;
-    }
-    if (x > -1) return targets.at(x).p;
-
-    // Nobody is critical, find anyone hurt at all, return lowest (let the healer sort out if it's worth healing or not)
+	//GATHER INFO
+    //find most armored, and set armorHighest
     for (i = 0, uCount = targets.size(); uCount > 0; uCount--, i++)
     {
-        if (targets.at(i).hp < 100)
-            if (x == -1 || targets.at(x).hp > targets.at(i).hp)
+            if (targets.at(x).p->GetArmor() < targets.at(i).p->GetArmor())
+				armorHighest = targets.at(i).p->GetArmor();
                 x = i;
     }
-    if (x > -1) return targets.at(x).p;
+    //find lowest health, and set healthLowest
+    for (i = 0, uCount = targets.size(); uCount > 0; uCount--, i++)
+    {
+            if (targets.at(x).hp > targets.at(i).hp)
+				healthLowest = targets.at(i).hp;
+                x = i;
+    }
 
+	//KEEP TOPPED UP, prioritze armored
+    for (i = 0, uCount = targets.size(); uCount > 0; uCount--, i++)
+    {
+        if (targets.at(i).hp < 75)
+            if (targets.at(x).p->GetArmor() < targets.at(i).p->GetArmor())
+                x = i;
+    }
+
+	//STABLE/EFFICIANT HEALS
+    for (i = 0, uCount = targets.size(); uCount > 0; uCount--, i++)
+    {
+        if (targets.at(i).hp < 45)
+            if (targets.at(x).hp < targets.at(i).hp)
+                x = i;
+    }
+
+	//BIG HEALS
+    for (i = 0, uCount = targets.size(); uCount > 0; uCount--, i++)
+    {
+        if (targets.at(i).hp < 40)
+            if (targets.at(x).hp > targets.at(i).hp)
+                x = i;
+    }
+
+	//FAST/INNEFICIENT HEALS
+    for (i = 0, uCount = targets.size(); uCount > 0; uCount--, i++)
+    {	//ARMORED
+        if (targets.at(i).hp < 30)
+            if (targets.at(x).p->GetArmor() > targets.at(i).p->GetArmor())
+                x = i;
+    }
+    for (i = 0, uCount = targets.size(); uCount > 0; uCount--, i++)
+    {	//UNARMORED
+        if (targets.at(i).hp < 25)
+            if (targets.at(x).hp > targets.at(i).hp)
+                x = i;
+    }
+	
+	//EMERGENCY HEALS
+    for (i = 0, uCount = targets.size(); uCount > 0; uCount--, i++)
+    {
+        if (targets.at(i).hp < 15)
+            if (targets.at(x).hp > targets.at(i).hp)
+                x = i;
+    }
+
+	//SAVE IMPORTANT MEMBERS
+    //find seriusly hurt, return lowest healer
+    for (i = 0, uCount = targets.size(); uCount > 0; uCount--, i++)
+    {
+		if(targets.at(i).type == JOB_HEAL)
+			if (targets.at(i).hp < 15)
+				if (x == -1 || targets.at(x).hp > targets.at(i).hp)
+					//Player* member = targets.at(i).p; //insist member is not declared for some reason
+					//uiManaPercentage = int(member->GetMaxMana() != 0 ? member->GetMana() * 100 / member->GetMaxMana() : 0);
+					//if(uiManaPercentage > 5)	//dont waste mana on healing OOM healer
+						x = i;
+    }
+    //find seriusly hurt, return lowest tank, or within margin of highest armor
+    for (i = 0, uCount = targets.size(); uCount > 0; uCount--, i++)
+    {
+		if( ( targets.at(i).type == JOB_TANK ) || ( targets.at(i).p->GetArmor() > (armorHighest*0.8) ) )
+			if (targets.at(i).hp < 15)
+				if (x == -1 || targets.at(x).hp > targets.at(i).hp)
+					x = i;
+    }
+
+//if(targets.at(x)){ return targets.at(x).p; };
+if(x != -1){ return targets.at(x).p; };
     return nullptr;
 }
 
