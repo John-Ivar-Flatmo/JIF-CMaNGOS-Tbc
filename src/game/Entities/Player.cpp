@@ -2649,7 +2649,7 @@ void Player::SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 RestXP, bool rec
     GetSession()->SendPacket(data);
 }
 
-void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
+void Player::GiveXP(uint32 xp,uint32 grouprate, Creature* victim, float groupRate)
 {
     if (xp < 1)
         return;
@@ -2680,7 +2680,7 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
     uint32 curXP = GetUInt32Value(PLAYER_XP);
     uint32 nextLvlXP = GetUInt32Value(PLAYER_NEXT_LEVEL_XP);
     uint32 extraLevelXp = static_cast<uint32>(5*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*level)));
-    uint32 extraPartyLevelXp = static_cast<uint32>((groupsize)*=);  //CRAKEDIT //JOHNLOOK
+    uint32 extraPartyLevelXp = static_cast<uint32>((xp*groupsize));  //CRAKEDIT //JOHNLOOK
     //JIFEDIT: extra xp at higher level to account for each player leveling like 10 chars
     uint32 newXP = curXP + xp + bonus_xp + extraLevelXp + extraPartyLevelXp;
     SendLogXPGain((xp+extraLevelXp), victim, GetXPRestBonus(xp),GetsRecruitAFriendBonus(), groupRate);
