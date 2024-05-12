@@ -2649,16 +2649,13 @@ void Player::SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 RestXP, bool rec
     GetSession()->SendPacket(data);
 }
 
-void Player::GiveXP(uint32 xp,uint32 groupsize, Creature* victim, float groupRate)
+void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 {
     if (xp < 1)
 		//return;
         xp = 1;	//give xp instead so that leveling from low tiers is possible albeit inneficient
 
     if (!IsAlive())
-        return;
-
-    if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_XP_USER_DISABLED))
         return;
 
     uint32 level = GetLevel();
