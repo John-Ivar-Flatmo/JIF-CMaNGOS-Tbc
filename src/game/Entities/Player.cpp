@@ -2652,9 +2652,13 @@ void Player::SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 RestXP, bool rec
 void Player::GiveXP(uint32 xp,uint32 groupsize, Creature* victim, float groupRate)
 {
     if (xp < 1)
-        return;
+		//return;
+        xp = 1;	//give xp instead so that leveling from low tiers is possible albeit inneficient
 
     if (!IsAlive())
+        return;
+
+    if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_XP_USER_DISABLED))
         return;
 
     uint32 level = GetLevel();
@@ -2663,10 +2667,20 @@ void Player::GiveXP(uint32 xp,uint32 groupsize, Creature* victim, float groupRat
     if (level >= GetMaxAttainableLevel())
         return;
 
-    // handle SPELL_AURA_MOD_XP_PCT auras
-    Unit::AuraList const& ModXPPctAuras = GetAurasByType(SPELL_AURA_MOD_XP_PCT);
-    for (auto ModXPPctAura : ModXPPctAuras)
-        xp = uint32(xp * (1.0f + ModXPPctAura->GetModifier()->m_amount / 100.0f));
+	uint32 extraLevelXpBonus = 1; //has to be atleast 1 anyway
+    if (victim)
+    {
+		uint32 victimLevel = victim -> GetLevel();
+		uint32 extraLevelXpBonus = static_cast<uint32>(2.5f*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*victimLevel)));
+    }
+    else
+    {
+				uint32 extraLevelXpBonus = static_cast<uint32>(2.5f*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*level)));
+    }
+        // handle SPELL_AURA_MOD_QUEST_XP_PCT auras
+        Unit::AuraList const& ModXPPctAuras = GetAurasByType(SPELL_AURA_MOD_QUEST_XP_PCT);
+        for (auto ModXPPctAura : ModXPPctAuras)
+            xp = uint32(xp * (1.0f + ModXPPctAura->GetModifier()->m_amount / 100.0f));
 
     // XP resting bonus for kill
     uint32 bonus_xp;
@@ -2679,11 +2693,39 @@ void Player::GiveXP(uint32 xp,uint32 groupsize, Creature* victim, float groupRat
 
     uint32 curXP = GetUInt32Value(PLAYER_XP);
     uint32 nextLvlXP = GetUInt32Value(PLAYER_NEXT_LEVEL_XP);
-    uint32 extraLevelXp = static_cast<uint32>(5*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*level)));
-    uint32 extraPartyLevelXp = static_cast<uint32>((xp*groupsize));  //CRAKEDIT //JOHNLOOK
+    uint32 extraLevelXp = static_cast<uint32>(2*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*level)));
     //JIFEDIT: extra xp at higher level to account for each player leveling like 10 chars
-    uint32 newXP = curXP + xp + bonus_xp + extraLevelXp + extraPartyLevelXp;
-    SendLogXPGain((xp+extraLevelXp), victim, GetXPRestBonus(xp),GetsRecruitAFriendBonus(), groupRate);
+	extraLevelXp = extraLevelXp+extraLevelXpBonus;
+	uint32 high = 0;
+	uint32 low = sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL);
+    if (GetGroup())
+    {
+        Group::MemberSlotList const& groupSlot = GetGroup()->GetMemberSlots();
+        for (const auto& memberItr : groupSlot)
+        {
+            Player* member = sObjectMgr.GetPlayer(memberItr.guid);
+            if (!member)
+				if( (member -> GetLevel()) > high)
+					high = static_cast<uint32>( member -> GetLevel() );
+				if( (member -> GetLevel()) < low)
+					low = static_cast<uint32>( member -> GetLevel() );
+        }
+    }
+	float mid = low+( (high-low)*0.5f );
+	float diff = mid - level;
+	if( diff > 10 ){diff = 10;};
+	if( diff < -10 ){diff = -10;};
+	float catchupMult = 1+(diff*0.025f);
+	float xpC =  xp * catchupMult;
+	float bonus_xpC = bonus_xp * catchupMult;
+	float extraLevelXpC = extraLevelXp * catchupMult;
+
+	uint32 restXp = static_cast<uint32>(bonus_xpC);
+	uint32 gainedXp = static_cast<uint32>(xpC + bonus_xpC + extraLevelXpC);
+	uint32 gainedXpNoRest = static_cast<uint32>(xpC + extraLevelXpC);
+	uint32 newXP = curXP + gainedXp;
+
+    SendLogXPGain(gainedXpNoRest, victim, restXp, GetsRecruitAFriendBonus(), groupRate);
 
 
     while (newXP >= nextLvlXP && level < GetMaxAttainableLevel())
@@ -20391,6 +20433,7 @@ void Player::RewardSinglePlayerAtKill(Unit* pVictim)
 
         if (Pet* pet = GetPet())
             pet->GivePetXP(MaNGOS::XP::Gain(pet, creatureVictim));
+			pet->GivePetXP(MaNGOS::XP::Gain(pet, creatureVictim)); //jifedit increased pet xp gain
 
         // normal creature (not pet/etc) can be only in !PvP case
         if (CreatureInfo const* normalInfo = creatureVictim->GetCreatureInfo())
