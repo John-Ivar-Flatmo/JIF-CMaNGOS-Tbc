@@ -2649,7 +2649,7 @@ void Player::SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 RestXP, bool rec
     GetSession()->SendPacket(data);
 }
 
-void Player::GiveXP(uint32 xp,uint32 grouprate, Creature* victim, float groupRate)
+void Player::GiveXP(uint32 xp,uint32 groupsize, Creature* victim, float groupRate)
 {
     if (xp < 1)
         return;
