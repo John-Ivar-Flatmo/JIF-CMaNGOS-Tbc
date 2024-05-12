@@ -2674,10 +2674,6 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
     {
 				uint32 extraLevelXpBonus = static_cast<uint32>(2.5f*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*level)));
     }
-        // handle SPELL_AURA_MOD_QUEST_XP_PCT auras
-        Unit::AuraList const& ModXPPctAuras = GetAurasByType(SPELL_AURA_MOD_QUEST_XP_PCT);
-        for (auto ModXPPctAura : ModXPPctAuras)
-            xp = uint32(xp * (1.0f + ModXPPctAura->GetModifier()->m_amount / 100.0f));
 
     // XP resting bonus for kill
     uint32 bonus_xp;
@@ -20428,9 +20424,10 @@ void Player::RewardSinglePlayerAtKill(Unit* pVictim)
         RewardReputation(creatureVictim, 1);
         GiveXP(MaNGOS::XP::Gain(this, creatureVictim), creatureVictim);
 
-        if (Pet* pet = GetPet())
+        if (Pet* pet = GetPet()) {
             pet->GivePetXP(MaNGOS::XP::Gain(pet, creatureVictim));
 			pet->GivePetXP(MaNGOS::XP::Gain(pet, creatureVictim)); //jifedit increased pet xp gain
+		}
 
         // normal creature (not pet/etc) can be only in !PvP case
         if (CreatureInfo const* normalInfo = creatureVictim->GetCreatureInfo())
