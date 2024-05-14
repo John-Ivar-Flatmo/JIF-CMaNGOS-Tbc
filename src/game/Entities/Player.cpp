@@ -2700,7 +2700,7 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
         {
             Player* member = sObjectMgr.GetPlayer(memberItr.guid);
             if (member)
-		groupXpMult++
+		groupXpMult++;
 				if( (member -> GetLevel()) > high)
 					high = static_cast<uint32>( member -> GetLevel() );
 				if( (member -> GetLevel()) < low)
