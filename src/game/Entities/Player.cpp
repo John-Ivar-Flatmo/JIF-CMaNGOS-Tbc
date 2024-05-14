@@ -2717,8 +2717,8 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 	{
         Group::MemberSlotList const& groupSlot = GetGroup()->GetMemberSlots();
 	float extraLevelXpGroupC = groupSlot * xp;
-	float extraLevelXpGroupC2 = extraLevelXpGroupC2 * catchupMult;
-	float extraLevelXpGroupC3 = extraLevelXpGroupC3 + extraLevelXpC;
+	float extraLevelXpGroupC2 = extraLevelXpGroupC * catchupMult;
+	float extraLevelXpGroupC3 = extraLevelXpGroupC2 + extraLevelXpC;
 
 	}
 
