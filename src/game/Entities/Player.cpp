@@ -2691,13 +2691,16 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 	extraLevelXp = extraLevelXp+extraLevelXpBonus;
 	uint32 high = 0;
 	uint32 low = sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL);
+
+    uint32 groupXpMult = 1;
     if (GetGroup())
     {
         Group::MemberSlotList const& groupSlot = GetGroup()->GetMemberSlots();
         for (const auto& memberItr : groupSlot)
         {
             Player* member = sObjectMgr.GetPlayer(memberItr.guid);
-            if (!member)
+            if (member)
+		groupXpMult++
 				if( (member -> GetLevel()) > high)
 					high = static_cast<uint32>( member -> GetLevel() );
 				if( (member -> GetLevel()) < low)
@@ -2713,18 +2716,10 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 	float bonus_xpC = bonus_xp * catchupMult;
 	float extraLevelXpC = extraLevelXp * catchupMult;
 
-        Group::MemberSlotList int const& groupSlot = GetGroup()->GetMemberSlots();
-	float extraLevelXpGroupC = groupSlot * xp;
-	float extraLevelXpGroupC2 = extraLevelXpGroupC * catchupMult;
-	float extraLevelXpGroupC3 = extraLevelXpGroupC2 + extraLevelXpC;
-
-	//float extraLevelXpGroupC = groupSlot * xp;
-	//float extraLevelXpGroupC2 = extraLevelXpGroupC2 * catchupMult;
-	//float extraLevelXpGroupC3 = extraLevelXpGroupC3 + extraLevelXpC;
-
 	uint32 restXp = static_cast<uint32>(bonus_xpC);
 	uint32 gainedXp = static_cast<uint32>(xpC + bonus_xpC + extraLevelXpGroupC3);
 	uint32 gainedXpNoRest = static_cast<uint32>(xpC + extraLevelXpGroupC3);
+	gainedXp*=groupXpMult;
 	uint32 newXP = curXP + gainedXp;
 
     SendLogXPGain(gainedXpNoRest, victim, restXp, GetsRecruitAFriendBonus(), groupRate);
