@@ -2643,7 +2643,7 @@ void Player::SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 RestXP, bool rec
     if (victim)
     {
         data << uint32(GivenXP);                            // experience without rested bonus
-        data << float(groupRate);                           // 1 - none 0 - 100% raid bonus penalty 100%+ group bonus
+        //data << float(groupRate);                           // 1 - none 0 - 100% raid bonus penalty 100%+ group bonus
     }
     data << uint8(recruitAFriend);                          // Refer-A-Friend bonus used
     GetSession()->SendPacket(data);
@@ -2692,7 +2692,7 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 	uint32 high = 0;
 	uint32 low = sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL);
 
-    uint32 groupXpMult = 1;
+    float groupXpMult = 0;
     if (GetGroup())
     {
         Group::MemberSlotList const& groupSlot = GetGroup()->GetMemberSlots();
@@ -2707,6 +2707,8 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 					low = static_cast<uint32>( member -> GetLevel() );
         }
     }
+    groupXpMult=groupXpMult-groupRate;
+    if(0.0f > groupXpMult){groupXpMult = 1.0f;};
 	float mid = low+( (high-low)*0.5f );
 	float diff = mid - level;
 	if( diff > 10 ){diff = 10;};
@@ -2720,8 +2722,8 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 	uint32 restXp = static_cast<uint32>(bonus_xpC);
 	uint32 gainedXp = static_cast<uint32>(xpC + bonus_xpC + extraLevelXpC);
 	uint32 gainedXpNoRest = static_cast<uint32>(xpC + extraLevelXpC);
-	gainedXp = gainedXp * groupXpMult;
-	gainedXpNoRest = gainedXpNoRest * groupXpMult;
+	gainedXp = gainedXp * static_cast<uint32>(groupXpMult);
+	gainedXpNoRest = gainedXpNoRest * static_cast<uint32>(groupXpMult);
 	gainedXpNoRestC = gainedXpNoRest * catchupMult;
 	uint32 newXP = curXP + gainedXp;
 
