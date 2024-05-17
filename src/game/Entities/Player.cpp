@@ -2658,6 +2658,10 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
     if (!IsAlive())
         return;
 
+    if (!groupRate){
+    	groupRate = 1.0f;
+    };
+
     uint32 level = GetLevel();
 
     // XP to money conversion processed in Player::RewardQuest
@@ -2668,11 +2672,11 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
     if (victim)
     {
 		uint32 victimLevel = victim -> GetLevel();
-		uint32 extraLevelXpBonus = static_cast<uint32>(2.5f*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*victimLevel)));
+		uint32 extraLevelXpBonus = static_cast<uint32>(sWorld.getConfig(CONFIG_FLOAT_SCALING_XP_MULT)*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*victimLevel)));
     }
     else
     {
-				uint32 extraLevelXpBonus = static_cast<uint32>(2.5f*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*level)));
+				uint32 extraLevelXpBonus = static_cast<uint32>(sWorld.getConfig(CONFIG_FLOAT_SCALING_XP_MULT)*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*level)));
     }
 
     // XP resting bonus for kill
