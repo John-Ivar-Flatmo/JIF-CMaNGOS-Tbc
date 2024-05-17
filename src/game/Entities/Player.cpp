@@ -2643,7 +2643,7 @@ void Player::SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 RestXP, bool rec
     if (victim)
     {
         data << uint32(GivenXP);                            // experience without rested bonus
-        //data << float(groupRate);                           // 1 - none 0 - 100% raid bonus penalty 100%+ group bonus
+        data << float(groupRate);                           // 1 - none 0 - 100% raid bonus penalty 100%+ group bonus
     }
     data << uint8(recruitAFriend);                          // Refer-A-Friend bonus used
     GetSession()->SendPacket(data);
@@ -2672,11 +2672,11 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
     if (victim)
     {
 		uint32 victimLevel = victim -> GetLevel();
-		uint32 extraLevelXpBonus = static_cast<uint32>(sWorld.getConfig(CONFIG_FLOAT_SCALING_XP_MULT)*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*victimLevel)));
+		uint32 extraLevelXpBonus = static_cast<uint32>((sWorld.getConfig(CONFIG_FLOAT_SCALING_XP_MULT)/2)*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*victimLevel)));
     }
     else
     {
-				uint32 extraLevelXpBonus = static_cast<uint32>(sWorld.getConfig(CONFIG_FLOAT_SCALING_XP_MULT)*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*level)));
+				uint32 extraLevelXpBonus = static_cast<uint32>((sWorld.getConfig(CONFIG_FLOAT_SCALING_XP_MULT)/2)*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*level)));
     }
 
     // XP resting bonus for kill
@@ -2690,7 +2690,7 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 
     uint32 curXP = GetUInt32Value(PLAYER_XP);
     uint32 nextLvlXP = GetUInt32Value(PLAYER_NEXT_LEVEL_XP);
-    uint32 extraLevelXp = static_cast<uint32>(2*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*level)));
+    uint32 extraLevelXp = static_cast<uint32>((sWorld.getConfig(CONFIG_FLOAT_SCALING_XP_MULT)/2)*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*level)));
     //JIFEDIT: extra xp at higher level to account for each player leveling like 10 chars
 	extraLevelXp = extraLevelXp+extraLevelXpBonus;
 	uint32 high = 0;
