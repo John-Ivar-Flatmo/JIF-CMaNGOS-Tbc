@@ -9,8 +9,10 @@ the changes to this version of cmangos are for a non public server, its tailored
 ## some of the changes from cmangos
 * removal of player kick ##including for cheating so not reccomended
 * allow trading bound items
-* bound items in AuctionHouse
+* bound items allowed in AuctionHouse
 * scale xp based on player level, xp+( 5* (XP/maxLevel)*level ) (x1.08 at lvl 1) (2x at lvl 12) 6x at lvl 60 
+* scale xp based on player count ##for levelling whole raid groups, and to make group xp code fairer
+* scale xp based on player level difference, basicly slightly improve built in level catchup
 * playerbot improvemnts
 	* bots use spells more reactivly, eg they check for debuffs and buffs when selecting spells
 	* bots use aoe abilities, including warlock hellfire

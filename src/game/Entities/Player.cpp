@@ -2658,9 +2658,9 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
     if (!IsAlive())
         return;
 
-    if (!groupRate){
-    	groupRate = 1.0f;
-    };
+	//if (!groupRate){
+    	groupRate = 1.0f;	//we have our own group rate math
+    //};
 
     uint32 level = GetLevel();
 
@@ -2693,14 +2693,15 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
     uint32 extraLevelXp = static_cast<uint32>((sWorld.getConfig(CONFIG_FLOAT_SCALING_XP_MULT)/2)*((xp/sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL)*level)));
     //JIFEDIT: extra xp at higher level to account for each player leveling like 10 chars
 	extraLevelXp = extraLevelXp+extraLevelXpBonus;
-	uint32 high = 0;
-	uint32 low = sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL);
+	uint32 high = 0;	//must be low initialy so set to min level
+	uint32 low = sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL); //same but must be high so max
 
     float groupXpMult = 0;
     if (GetGroup())
     {
         Group::MemberSlotList const& groupSlot = GetGroup()->GetMemberSlots();
-        for (const auto& memberItr : groupSlot)
+        for (const auto& memberItr : groupSlot) //get lowest and highest level group member
+		//	 -> done by first sorting then just going thugh them updating the value
         {
             Player* member = sObjectMgr.GetPlayer(memberItr.guid);
             if (member)
@@ -2711,13 +2712,32 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 					low = static_cast<uint32>( member -> GetLevel() );
         }
     }
-    groupXpMult=groupXpMult-groupRate;
+    groupXpMult=groupXpMult;
     if(0.0f > groupXpMult){groupXpMult = 1.0f;};
-	float mid = low+( (high-low)*0.5f );
-	float diff = mid - level;
-	if( diff > 10 ){diff = 10;};
-	if( diff < -10 ){diff = -10;};
-	float catchupMult = 1+(diff*0.025f);
+
+	
+	float mid = low+( (high-low)*0.5f );	//read thugh self explanatory
+	float diff = mid - level;	//but basicly, we have low,high, get mid, get diff
+	//if( diff > 10 ){diff = 10;};	//clamp level differnce to some number, no benefits past x diff
+	//if( diff < -10 ){diff = -10;};
+	float scalingFactor = 4.75f;	//kinda agression number, how quickly we increase
+	float scalingDevisorBase = 120.0f;	//kind of a sanity number, keep the number in check
+	float scalingDevisor = scalingDevisorBase;
+	float scalingDeFactor = 24.0f;	//how agressivly we loose value after max diff
+	float cutoffPoint = 10.0f;
+	//float middlePoint = 0.5f;	//the start value 1.0f for 1* things get wierd at other values
+	if( fabsf(diff) > cutoffPoint ){scalingDevisor = scalingDevisorBase+(diff*scalingDeFactor);};
+		//locks scaling if diff to large
+		//fabsf is math absolute aka abs for floats, aka make sure number is positive
+	float middlePoint = scalingDevisorBase/scalingDevisor;	//extra agressiv scaling, hard to configure sorry
+		//(120/120)+( 2*4.75/120 ) = ~1.07916666666666666667
+		//(120/120)+( 5*4.75/120 ) = ~1.19791666666666666667
+		//(120/120)+( 10*4.75/120 ) = ~1.39583333333333333333
+		//( 120/(120+11) ) + ( 11*4.75/(120+(11*24)) ) = ~1.05209824268447837150
+		//( 120/(120+33) ) + ( 33*4.75/(120+(33*24)) ) = ~0.95618872549019607843
+		//( 120/(120+70) ) + ( 70*4.75/(120+(70*24)) ) = ~0.81630116959064327485
+
+	float catchupMult = middlePoint+(diff*scalingFactor/scalingDevisor);	//non linear version
 	float xpC =  xp * catchupMult;
 	float bonus_xpC = bonus_xp * catchupMult;
 	float extraLevelXpC = extraLevelXp * catchupMult;
