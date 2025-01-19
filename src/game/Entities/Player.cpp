@@ -2743,13 +2743,12 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 
 	uint32 restXp = static_cast<uint32>(bonus_xpC);
 	uint32 gainedXp = static_cast<uint32>(xpC + bonus_xpC + extraLevelXpC);
+	gainedXp *= static_cast<uint32>(groupXpMult);
 	uint32 gainedXpNoRest = static_cast<uint32>(xpC + extraLevelXpC);
-	gainedXp = gainedXp * static_cast<uint32>(groupXpMult);
-	gainedXpNoRest = gainedXpNoRest * static_cast<uint32>(groupXpMult);
-	uint32 gainedXpNoRestC = gainedXpNoRest * static_cast<uint32>(catchupMult);
+	gainedXpNoRest *= static_cast<uint32>(groupXpMult);
 	uint32 newXP = curXP + gainedXp;
 
-    SendLogXPGain(gainedXpNoRestC, victim, restXp, GetsRecruitAFriendBonus(), groupRate);
+    SendLogXPGain(gainedXpNoRest, victim, restXp, GetsRecruitAFriendBonus(), groupXpMult);
 
 
     while (newXP >= nextLvlXP && level < GetMaxAttainableLevel())
