@@ -2696,7 +2696,7 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 	uint32 high = 0;	//must be low initialy so set to min level
 	uint32 low = sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL); //same but must be high so max
 
-    float groupXpMult = 0;
+    float groupXpMult = 0.0f;
     if (GetGroup())
     {
         Group::MemberSlotList const& groupSlot = GetGroup()->GetMemberSlots();
@@ -2712,11 +2712,10 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 					low = static_cast<uint32>( member -> GetLevel() );
         }
     }
-    groupXpMult=groupXpMult;
-    if(0.0f > groupXpMult){groupXpMult = 1.0f;};
+    if(groupXpMult == 0.0f){groupXpMult = 1.0f;};
 
 	
-	float mid = low+( (high-low)*0.5f );	//read thugh self explanatory
+	float mid = low+( (high-low)*0.5f );
 	float diff = mid - level;	//but basicly, we have low,high, get mid, get diff
 	//if( diff > 10 ){diff = 10;};	//clamp level differnce to some number, no benefits past x diff
 	//if( diff < -10 ){diff = -10;};
