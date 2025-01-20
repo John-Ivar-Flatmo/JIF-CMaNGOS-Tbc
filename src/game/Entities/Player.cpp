@@ -2732,7 +2732,7 @@ void Player::GiveXP(uint32 xp, Creature* victim, float groupRate)
 	if( fabsf(diff) > cutoffPoint ){scalingDevisor = scalingDevisorBase+(diff*scalingDeFactor);};
 		//locks scaling if diff to large
 		//fabsf is math absolute aka abs for floats, aka make sure number is positive
-	float middlePoint = scalingDevisorBase/scalingDevisor;	//extra agressiv scaling, hard to configure sorry
+	float middlePoint = scalingDevisor/scalingDevisorBase;	//extra agressiv scaling, hard to configure sorry
 		//(120/120)+( 2*4.75/120 ) = ~1.07916666666666666667
 		//(120/120)+( 5*4.75/120 ) = ~1.19791666666666666667
 		//(120/120)+( 10*4.75/120 ) = ~1.39583333333333333333
