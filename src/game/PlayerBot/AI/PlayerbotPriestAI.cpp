@@ -448,6 +448,8 @@ CombatManeuverReturns PlayerbotPriestAI::HealPlayer(Player* target)
     if (m_ai.IsInCombat() && (hp < 50 || m_ai.GetManaPercent() < 40))
         if (INNER_FOCUS > 0 && m_bot.IsSpellReady(INNER_FOCUS) && !m_bot.HasAura(INNER_FOCUS, EFFECT_INDEX_0) && CastSpell(INNER_FOCUS, &m_bot))
             return RETURN_CONTINUE;
+if (hp < 20 && HEAL > 0 && m_ai.In_Reach(target, HEAL) && m_ai.CastSpell(HEAL, *target) == SPELL_CAST_OK)
+        return RETURN_CONTINUE;
 if( hp > 30 ){
     if (hp < 80 && hpSelf < 40 && BINDING_HEAL > 0 && m_ai.In_Reach(target, BINDING_HEAL) && m_ai.CastSpell(BINDING_HEAL, *target) == SPELL_CAST_OK)
         return RETURN_CONTINUE;
@@ -466,13 +468,21 @@ if(m_ai.GetHealthPercent() < 40){
     if (hp < 35 && FLASH_HEAL > 0 && m_ai.In_Reach(target, FLASH_HEAL) && m_ai.CastSpell(FLASH_HEAL, *target) == SPELL_CAST_OK)
         return RETURN_CONTINUE;
     if (hp < 50 && GREATER_HEAL > 0 && m_ai.In_Reach(target, GREATER_HEAL) && m_ai.CastSpell(GREATER_HEAL, *target) == SPELL_CAST_OK)
-        return RETURN_CONTINUE;
+  		if (m_ai.In_Reach(target, RENEW) && !target->HasAura(RENEW) ){ m_ai.CastSpell(RENEW, *target);};
+  				//will this even cast cuz global cooldown or do bots cheat
+    	return RETURN_CONTINUE;
     if (hp < 60 && PRAYER_OF_MENDING > 0 && m_ai.In_Reach(target, PRAYER_OF_MENDING) && !target->HasAura(PRAYER_OF_MENDING, EFFECT_INDEX_0) && CastSpell(PRAYER_OF_MENDING, target))
         return RETURN_FINISHED_FIRST_MOVES;
+    if(GetTargetJob(target) == JOB_TANK || GetTargetJob(target) == JOB_MAIN_TANK){
+		if (hp < 70 && RENEW > 0 && m_ai.In_Reach(target, RENEW) && !target->HasAura(RENEW) && m_ai.CastSpell(RENEW, *target) == SPELL_CAST_OK)
+			return RETURN_CONTINUE;
+	};
     if (hp < 70 && HEAL > 0 && m_ai.In_Reach(target, HEAL) && m_ai.CastSpell(HEAL, *target) == SPELL_CAST_OK)
         return RETURN_CONTINUE;
-    if (hp < 90 && RENEW > 0 && m_ai.In_Reach(target, RENEW) && !target->HasAura(RENEW) && m_ai.CastSpell(RENEW, *target) == SPELL_CAST_OK)
-        return RETURN_CONTINUE;
+    if(GetTargetJob(target) == JOB_TANK || GetTargetJob(target) == JOB_MAIN_TANK){
+		if (hp < 90 && LESSER_HEAL > 0 && m_ai.In_Reach(target, LESSER_HEAL) && m_ai.CastSpell(LESSER_HEAL, *target) == SPELL_CAST_OK)
+			return RETURN_CONTINUE;
+	};
 
     // Group heal. Not really useful until a group check is available?
     //if (hp < 40 && PRAYER_OF_HEALING > 0 && m_ai.CastSpell(PRAYER_OF_HEALING, *target) & RETURN_CONTINUE)

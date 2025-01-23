@@ -472,9 +472,11 @@ bool PlayerbotWarlockAI::CheckCurse(Unit* target)
         }
     }
     // else: go for Curse of Agony: in the long run: go for direct damage
+    // shuld definatly check enemy health percentage
     else if (CURSE_OF_AGONY && m_ai.In_Reach(target, CURSE_OF_AGONY) && !target->HasAura(CURSE_OF_AGONY))
     {
         if (AMPLIFY_CURSE && m_bot.IsSpellReady(AMPLIFY_CURSE))
+        	//shuld defiantly check enemy health for this
             CastSpell(AMPLIFY_CURSE, &m_bot);
 
         if (CastSpell(CURSE_OF_AGONY, target))
@@ -484,9 +486,11 @@ bool PlayerbotWarlockAI::CheckCurse(Unit* target)
         }
     }
     // else: go for Curse of Weakness
+    //shuld be claculated from enemy melle damage, if enemy is in melee probly, prefered over agony
     else if (CURSE_OF_WEAKNESS && !target->HasAura(CURSE_OF_WEAKNESS) && !target->HasAura(CURSE_OF_AGONY))
     {
         if (AMPLIFY_CURSE && m_bot.IsSpellReady(AMPLIFY_CURSE))
+        	//shuld definatly check enemy melee damage for this
             CastSpell(AMPLIFY_CURSE, &m_bot);
 
         if (CastSpell(CURSE_OF_WEAKNESS, target))
@@ -562,6 +566,7 @@ if( creature && target ){
             {
                 //m_ai.TellMaster("Summoning favorite demon...");
                 m_isTempImp = false;
+                m_ai.SetIgnoreUpdateTime(10);
                 return;
             }
         }
@@ -571,6 +576,7 @@ if( creature && target ){
             m_isTempImp = demonOfChoice != DEMON_IMP;
 
             //m_ai.TellMaster("Summoning Imp...");
+            m_ai.SetIgnoreUpdateTime(10);
             return;
         }
     }

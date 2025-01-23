@@ -65,12 +65,14 @@ bool PlayerbotClassAI::EatDrinkBandage(bool bMana, unsigned char foodPercent, un
             m_ai.TellMaster("I'm trying to use a drink.");
             m_ai.UseItem(drinkItem);
             m_ai.MovementClear(); //clear movement if using consumable
+            m_ai.SetIgnoreUpdateTime(20);
         }
         if (foodItem)
         {
             m_ai.TellMaster("I'm trying to use some food.");
             m_ai.UseItem(foodItem);
             m_ai.MovementClear(); //clear movement if using consumable
+            m_ai.SetIgnoreUpdateTime(20);
         }
         return true;
     }
