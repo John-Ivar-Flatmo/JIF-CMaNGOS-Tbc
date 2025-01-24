@@ -1558,7 +1558,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
         }
         case SMSG_DUEL_REQUESTED:
         {
-            SetIgnoreUpdateTime(0);
+            SetIgnoreUpdateTime(1);
             WorldPacket p(packet);
             ObjectGuid flagGuid;
             p >> flagGuid;
@@ -1908,7 +1908,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
             p >> castCount >> spellId;
             if (m_CurrentlyCastingSpellId == spellId)
             {
-                SetIgnoreUpdateTime(0);
+                SetIgnoreUpdateTime(1);
                 m_CurrentlyCastingSpellId = 0;
             }
             return;
@@ -2238,7 +2238,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
 
             uint32 CastingTime = !IsChanneledSpell(pSpellInfo) ? GetSpellCastTime(pSpellInfo, m_bot) : GetSpellDuration(pSpellInfo);
 
-            SetIgnoreUpdateTime((msTime / 1000) + 0);	//JIEDIT 1 -> 0
+            SetIgnoreUpdateTime((msTime / 1000) + 2);	//JIEDIT 1 -> 0
 
             return;
         }
@@ -4822,7 +4822,7 @@ void PlayerbotAI::MovementReset()
                 {
                     gDist[0] = 0.5f;
                     gDist[1] = 1.0f;
-                    SetIgnoreUpdateTime(3);
+                    SetIgnoreUpdateTime(1);	//JIEDIT was 3
                     m_FollowAutoGo = FOLLOWAUTOGO_INIT;
                 }
             }
@@ -5088,7 +5088,7 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
         // set state to dead
         SetState(BOTSTATE_DEAD);
         // wait 30sec
-        SetIgnoreUpdateTime(15);
+        SetIgnoreUpdateTime(15);	//JIFEDIT 15->30
 
         return;
     }
@@ -5148,7 +5148,7 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
             MovementReset();
             m_bot->SetSelectionGuid(ObjectGuid());
             SetState(BOTSTATE_NORMAL);
-            SetIgnoreUpdateTime(0);
+            SetIgnoreUpdateTime(1);
         }
         else if (!m_bot->HasAura(TAME_BEAST_1, EFFECT_INDEX_1))
         {
@@ -5197,7 +5197,7 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
         if (GetSpellCharges(m_CraftSpellId) == 0 || spell->CheckCast(true) != SPELL_CAST_OK)
         {
             SetState(BOTSTATE_NORMAL);
-            SetIgnoreUpdateTime(0);
+            SetIgnoreUpdateTime(1);
             AutoUpgradeEquipment();
             m_CraftSpellId = 0;
         }
@@ -5205,7 +5205,7 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
         {
             SpellCastTargets targets;
             spell->SpellStart(&targets);
-            SetIgnoreUpdateTime(1);	//was 6 is this gunna break	//JIFEDIT
+            SetIgnoreUpdateTime(0);	//was 6 is this gunna break	//JIFEDIT
         }
 
         return;
@@ -5230,7 +5230,7 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
             {
                 // DEBUG_LOG("m_DelayAttackInit (%li) + m_DelayAttack (%u) > time(%li)", m_DelayAttackInit, m_DelayAttack, CurrentTime());
                 if (m_DelayAttackInit + m_DelayAttack > CurrentTime())
-                    return SetIgnoreUpdateTime(0); // short bursts of delay	//JIEDIT maybe need be 1 no know
+                    return SetIgnoreUpdateTime(1); // short bursts of delay	//JIEDIT maybe need be 1 no know
 
                 return DoNextCombatManeuver();
             }
@@ -5563,10 +5563,10 @@ SpellCastResult PlayerbotAI::CastSpell(uint32 spellId)
 
         float num = -CastTime;
         if(0.0f > CastTime){
-        	SetIgnoreUpdateTime(static_cast<uint8>(num));
+        	SetIgnoreUpdateTime(std::ceil(num));
         }else{
-        	SetIgnoreUpdateTime(static_cast<uint8>(CastTime));
-        };
+        	SetIgnoreUpdateTime(std::ceil(CastTime));
+        };	//is +1 necesarry, why, amybe stop ai movement instead, this fucking bot code is so bad
         //SetIgnoreUpdateTime(std::max(CastTime, 0.0f) + 1);
 
         if (IsAutoRepeatRangedSpell(pSpellInfo))
@@ -6731,7 +6731,7 @@ void PlayerbotAI::findNearbyCreature()
                 wo->GetContactPoint(m_bot, x, y, z, wo->GetObjectBoundingRadius());
                 m_bot->GetMotionMaster()->MovePoint(wo->GetMapId(), x, y, z, FORCED_MOVEMENT_RUN, false);
                 // give time to move to point before trying again
-                SetIgnoreUpdateTime(0);	//hopefully enugh time, and keeps them more responsive //was 1.0
+                SetIgnoreUpdateTime(1);	//hopefully enugh time, and keeps them more responsive //was 1.0
             }
 
             if (m_bot->GetDistance(wo) < INTERACTION_DISTANCE)
@@ -7301,7 +7301,7 @@ bool PlayerbotAI::TradeCopper(uint32 copper)
 
 bool PlayerbotAI::DoTeleport(WorldObject& /*obj*/)
 {
-    SetIgnoreUpdateTime(3);
+    SetIgnoreUpdateTime(1);
     PlayerbotChatHandler ch(GetMaster());
     if (!ch.teleport(*m_bot))
     {
